@@ -1,8 +1,6 @@
-# Deemix
+# MMS-DOWNLOADER
 
-This is the monorepo for the revived Deemix project, originally created by the very talented [RemixDev](https://gitlab.com/RemixDev).
-
-The docker image was heavily inspired by the fantastic work of [Bockiii](https://gitlab.com/Bockiii/deemix-docker).
+Minimal Deemix project, originally created by the very talented [RemixDev](https://gitlab.com/RemixDev).
 
 ### Packages in this Repo
 
@@ -26,20 +24,6 @@ xattr -d com.apple.quarantine /Applications/deemix.app
 ```
 
 Modify path if installed to a different locaiton
-
-### Docker Image
-
-Deemix is also available as a [docker image](https://github.com/bambanah/deemix/pkgs/container/deemix).
-
-#### Example Usage
-
-```bash
-docker run -d --name Deemix \
-  -v /path/to/music:/downloads \
-  -v /path/to/config:/config \
-  -p 6595:6595 \
-  ghcr.io/bambanah/deemix:latest
-```
 
 #### Parameters
 
@@ -81,9 +65,7 @@ This repo uses [pnpm](https://pnpm.io/) for package management and [Turborepo](h
 
 1. Clone the repository
    ```bash
-   git clone https://github.com/bambanah/deemix.git
-   # - OR -
-   gh repo clone bambanah/deemix
+   git clone https://github.com/titoo-dev/mms-downloader.git
    ```
 2. Install dependencies
    ```bash
@@ -95,14 +77,6 @@ This repo uses [pnpm](https://pnpm.io/) for package management and [Turborepo](h
    ```
    - This will start the development server on port 6595
    - It will also watch for changes in dependencies and hot reload the app
-
-### Building the Docker Image
-
-A docker image can be built with the provided Dockerfile.
-
-```bash
-docker build -t deemix .
-```
 
 ### Packaging the Electron GUI
 
