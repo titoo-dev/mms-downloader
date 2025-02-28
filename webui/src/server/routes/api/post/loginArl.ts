@@ -1,4 +1,4 @@
-import { DeemixApp, sessionDZ } from "@/deemixApp.js";
+import { DeemixApp, deezSessionMap } from "@/deemixApp.js";
 import { logger } from "@/helpers/logger.js";
 import {
 	resetLoginCredentials,
@@ -27,9 +27,9 @@ const handler: RequestHandler<any, any, RawLoginArlBody, any> = async (
 	req,
 	res
 ) => {
-	if (!sessionDZ[req.session.id]) sessionDZ[req.session.id] = new Deezer();
+	if (!deezSessionMap[req.session.id]) deezSessionMap[req.session.id] = new Deezer();
 	const deemix: DeemixApp = req.app.get("deemix");
-	const dz: Deezer = sessionDZ[req.session.id];
+	const dz: Deezer = deezSessionMap[req.session.id];
 	const isSingleUser: boolean = req.app.get("isSingleUser");
 
 	if (!req.body) {
@@ -66,7 +66,7 @@ const handler: RequestHandler<any, any, RawLoginArlBody, any> = async (
 		const testDz = new Deezer();
 		response = await testDz.loginViaArl(loginParams.arl, loginParams.child);
 	}
-	if (response === LoginStatus.FAILED) sessionDZ[req.session.id] = new Deezer();
+	if (response === LoginStatus.FAILED) deezSessionMap[req.session.id] = new Deezer();
 	if (!(await deemix.isDeezerAvailable())) response = LoginStatus.NOT_AVAILABLE;
 	const returnValue = {
 		status: response,

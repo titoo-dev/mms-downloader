@@ -1,12 +1,12 @@
 import { Deezer, utils as dzUtils } from "deezer-sdk";
 import { type ApiHandler } from "../../../types.js";
-import { sessionDZ } from "../../../deemixApp.js";
+import { deezSessionMap } from "../../../deemixApp.js";
 
 const path: ApiHandler["path"] = "/getTracklist";
 
 const handler: ApiHandler["handler"] = async (req, res) => {
-	if (!sessionDZ[req.session.id]) sessionDZ[req.session.id] = new Deezer();
-	const dz = sessionDZ[req.session.id];
+	if (!deezSessionMap[req.session.id]) deezSessionMap[req.session.id] = new Deezer();
+	const dz = deezSessionMap[req.session.id];
 	const deemix = req.app.get("deemix");
 
 	const list_id = String(req.query.id);

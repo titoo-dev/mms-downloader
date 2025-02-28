@@ -1,7 +1,7 @@
 import * as deemix from "deemix";
 import { Deezer } from "deezer-sdk";
 import type { RequestHandler } from "express";
-import { sessionDZ } from "../../../deemixApp.js";
+import { deezSessionMap } from "../../../deemixApp.js";
 import type {
 	ApiHandler,
 	GetAlbumResponse,
@@ -32,8 +32,8 @@ const handler: RequestHandler<ResBody, any, any, AnalyzeQuery> = async (
 		const isTrackOrAlbum = ["track", "album"].includes(linkType);
 
 		if (isTrackOrAlbum) {
-			if (!sessionDZ[req.session.id]) sessionDZ[req.session.id] = new Deezer();
-			const dz = sessionDZ[req.session.id];
+			if (!deezSessionMap[req.session.id]) deezSessionMap[req.session.id] = new Deezer();
+			const dz = deezSessionMap[req.session.id];
 			const apiMethod = linkType === "track" ? "get_track" : "get_album";
 			const resBody: ResBody = await dz.api[apiMethod](linkId);
 

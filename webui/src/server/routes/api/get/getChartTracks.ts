@@ -1,4 +1,4 @@
-import { sessionDZ } from "@/deemixApp.js";
+import { deezSessionMap } from "@/deemixApp.js";
 import { BadRequestError } from "@/helpers/errors.js";
 import { logger } from "@/helpers/logger.js";
 import { isObjectEmpy } from "@/helpers/primitive-checks.js";
@@ -20,8 +20,8 @@ const handler: RequestHandler<any, any, any, RawChartTracksQuery> = async (
 	next
 ) => {
 	try {
-		if (!sessionDZ[req.session.id]) sessionDZ[req.session.id] = new Deezer();
-		const dz = sessionDZ[req.session.id];
+		if (!deezSessionMap[req.session.id]) deezSessionMap[req.session.id] = new Deezer();
+		const dz = deezSessionMap[req.session.id];
 
 		if (isObjectEmpy(req.query) || !req.query.id) {
 			throw new BadRequestError();

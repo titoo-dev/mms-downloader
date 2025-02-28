@@ -1,6 +1,6 @@
 import { Deezer } from "deezer-sdk";
 import type { RequestHandler } from "express";
-import { sessionDZ } from "@/deemixApp.js";
+import { deezSessionMap } from "@/deemixApp.js";
 import type { ApiHandler } from "@/types.js";
 
 export interface RawAlbumQuery {
@@ -25,8 +25,8 @@ const handler: RequestHandler<any, any, any, RawAlbumQuery> = async (
 	req,
 	res
 ) => {
-	if (!sessionDZ[req.session.id]) sessionDZ[req.session.id] = new Deezer();
-	const dz = sessionDZ[req.session.id];
+	if (!deezSessionMap[req.session.id]) deezSessionMap[req.session.id] = new Deezer();
+	const dz = deezSessionMap[req.session.id];
 
 	if (!req.query) {
 		res.status(400).send();

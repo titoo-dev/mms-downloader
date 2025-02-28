@@ -1,6 +1,6 @@
 import { Deezer } from "deezer-sdk";
 import { type ApiHandler } from "@/types.js";
-import { sessionDZ } from "@/deemixApp.js";
+import { deezSessionMap } from "@/deemixApp.js";
 
 const path: ApiHandler["path"] = "/mainSearch";
 
@@ -99,8 +99,8 @@ const emptyResult = {
 };
 
 const handler: ApiHandler["handler"] = async (req, res) => {
-	if (!sessionDZ[req.session.id]) sessionDZ[req.session.id] = new Deezer();
-	const dz = sessionDZ[req.session.id];
+	if (!deezSessionMap[req.session.id]) deezSessionMap[req.session.id] = new Deezer();
+	const dz = deezSessionMap[req.session.id];
 
 	const term = String(req.query.term);
 	let results;

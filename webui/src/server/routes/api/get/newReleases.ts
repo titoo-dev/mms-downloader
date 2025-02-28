@@ -1,13 +1,13 @@
 import { Deezer } from "deezer-sdk";
-import { sessionDZ } from "../../../deemixApp.js";
+import { deezSessionMap } from "../../../deemixApp.js";
 import { type ApiHandler } from "../../../types.js";
 import { getAlbumDetails } from "./albumSearch.js";
 
 const path: ApiHandler["path"] = "/newReleases";
 
 const handler: ApiHandler["handler"] = async (req, res) => {
-	if (!sessionDZ[req.session.id]) sessionDZ[req.session.id] = new Deezer();
-	const dz = sessionDZ[req.session.id];
+	if (!deezSessionMap[req.session.id]) deezSessionMap[req.session.id] = new Deezer();
+	const dz = deezSessionMap[req.session.id];
 
 	const results = await dz.gw.get_page("channels/explore");
 

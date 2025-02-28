@@ -1,5 +1,5 @@
 import { Deezer } from "deezer-sdk";
-import { sessionDZ } from "../../../deemixApp.js";
+import { deezSessionMap } from "../../../deemixApp.js";
 import { type ApiHandler } from "../../../types.js";
 
 const path: ApiHandler["path"] = "/getCharts";
@@ -8,8 +8,8 @@ let chartsCache: any;
 
 const handler: ApiHandler["handler"] = async (req, res) => {
 	if (!chartsCache) {
-		if (!sessionDZ[req.session.id]) sessionDZ[req.session.id] = new Deezer();
-		const dz = sessionDZ[req.session.id];
+		if (!deezSessionMap[req.session.id]) deezSessionMap[req.session.id] = new Deezer();
+		const dz = deezSessionMap[req.session.id];
 
 		const chartsData = await dz.api.get_countries_charts();
 		const countries: any[] = [];

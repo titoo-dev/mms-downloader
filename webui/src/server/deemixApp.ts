@@ -32,7 +32,7 @@ export const configFolder: string = utils.getConfigFolder();
 setDeezerCacheDir(configFolder);
 export const defaultSettings: Settings = DEFAULT_SETTINGS;
 
-export const sessionDZ: Record<string, Deezer> = {};
+export const deezSessionMap: Record<string, Deezer> = {};
 
 type DeezerAvailable = "yes" | "no" | "no-network";
 

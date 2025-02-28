@@ -1,14 +1,14 @@
 import { Deezer } from "deezer-sdk";
-import { sessionDZ } from "../../../deemixApp.js";
+import { deezSessionMap } from "../../../deemixApp.js";
 import { logger } from "../../../helpers/logger.js";
 import { type ApiHandler } from "../../../types.js";
 
 const path: ApiHandler["path"] = "/retryDownload";
 
 const handler: ApiHandler["handler"] = async (req, res) => {
-	if (!sessionDZ[req.session.id]) sessionDZ[req.session.id] = new Deezer();
+	if (!deezSessionMap[req.session.id]) deezSessionMap[req.session.id] = new Deezer();
 	const deemix = req.app.get("deemix");
-	const dz = sessionDZ[req.session.id];
+	const dz = deezSessionMap[req.session.id];
 
 	const uuid = req.body.uuid;
 	const data = uuid.split("_");
