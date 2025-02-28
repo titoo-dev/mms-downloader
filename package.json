@@ -1,9 +1,9 @@
 {
-	"name": "deemix",
+	"name": "mms-downloader",
 	"private": true,
-	"description": "A hybrid monorepo that wraps deemix-webui and lets you use the deemix-js library",
-	"repository": "https://github.com/bambanah/deemix.git",
-	"author": "Bambanah",
+	"description": "A minimal deemix-js library utilities",
+	"repository": "https://github.com/titoo-dec/mms-downloader.git",
+	"author": "titoo-dev",
 	"license": "GPL-3.0-only",
 	"scripts": {
 		"dev": "pnpm -r --parallel --filter=!deemix-gui dev",
