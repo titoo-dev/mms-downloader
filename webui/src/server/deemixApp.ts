@@ -41,7 +41,7 @@ export class DeemixApp {
 	queue: Record<string, any>;
 	currentJob: boolean | Downloader | null;
 
-	deezerAvailable?: DeezerAvailable;
+	deezerAvailabilityStatus?: DeezerAvailable;
 	latestVersion: string | null;
 
 	plugins: Record<string, SpotifyPlugin>;
@@ -67,7 +67,7 @@ export class DeemixApp {
 	}
 
 	async isDeezerAvailable() {
-		if (this.deezerAvailable) return this.deezerAvailable;
+		if (this.deezerAvailabilityStatus) return this.deezerAvailabilityStatus;
 
 		let response: GotResponse<string>;
 		try {
@@ -85,18 +85,18 @@ export class DeemixApp {
 			});
 		} catch (e) {
 			logger.error(e);
-			this.deezerAvailable = "no-network";
+			this.deezerAvailabilityStatus = "no-network";
 
-			return this.deezerAvailable;
+			return this.deezerAvailabilityStatus;
 		}
 		const title = (
 			response.body.match(/<title[^>]*>([^<]+)<\/title>/)![1] || ""
 		).trim();
 
-		this.deezerAvailable =
+		this.deezerAvailabilityStatus =
 			title !== "Deezer will soon be available in your country." ? "yes" : "no";
 
-		return this.deezerAvailable;
+		return this.deezerAvailabilityStatus;
 	}
 
 	async getLatestVersion(force = false): Promise<string | null> {
@@ -163,6 +163,11 @@ export class DeemixApp {
 		this.plugins.spotify.saveSettings(newSpotifySettings);
 	}
 
+	/**
+	 * Retrieves the current download queue and order, along with the current job's slimmed dictionary if a job is in progress.
+	 *
+	 * @returns {object} An object containing the download queue, queue order, and the current job's slimmed dictionary if applicable.
+	 */
 	getQueue() {
 		const result: any = {
 			queue: this.queue,
@@ -176,6 +181,17 @@ export class DeemixApp {
 		return result;
 	}
 
+	/**
+	 * Adds a list of URLs to the download queue.
+	 *
+	 * @param {Deezer} dz - The Deezer instance.
+	 * @param {string[]} url - An array of URLs to add to the queue.
+	 * @param {number} bitrate - The desired bitrate for the download.
+	 * @param {boolean} [retry=false] - Whether to retry adding to the queue if already present.
+	 * @throws {NotLoggedIn} If the user is not logged in.
+	 * @throws {CantStream} If the user cannot stream at the desired bitrate.
+	 * @returns {Promise<Record<string, any>[]>} A promise that resolves to an array of slimmed download objects.
+	 */
 	async addToQueue(
 		dz: Deezer,
 		url: string[],
@@ -278,6 +294,20 @@ export class DeemixApp {
 		return slimmedObjects;
 	}
 
+	/**
+	 * Starts processing the download queue. This function will process each item in the queue
+	 * one by one, downloading them using the appropriate method based on their type.
+	 *
+	 * @param {Deezer} dz - The Deezer instance used for downloading.
+	 * @returns {Promise<null>} - Returns null if no job is started or the queue is empty.
+	 *
+	 * @remarks
+	 * This function will lock the current job to prevent multiple downloads from starting simultaneously.
+	 * It will read the queue order and process each item until the queue is empty. The status of each
+	 * download will be updated and saved to the queue.
+	 *
+	 * @throws {Error} - Throws an error if there is an issue with reading or writing files.
+	 */
 	async startQueue(dz: Deezer) {
 		do {
 			if (this.currentJob !== null || this.queueOrder.length === 0) {
@@ -376,7 +406,20 @@ export class DeemixApp {
 		} while (this.queueOrder.length);
 	}
 
-	cancelDownload(uuid: string) {
+	/**
+	 * Cancels a download based on the provided UUID.
+	 *
+	 * @param uuid - The unique identifier of the download to be canceled.
+	 *
+	 * If the download is currently in progress, it sets the `isCanceled` flag to true
+	 * and sends a "cancellingCurrentItem" event with the UUID.
+	 *
+	 * If the download is in the queue, it removes the UUID from the queue order,
+	 * updates the queue order file, and sends a "removedFromQueue" event with the UUID.
+	 *
+	 * In both cases, it deletes the corresponding queue file and removes the UUID from the queue.
+	 */
+	stopDownload(uuid: string) {
 		if (Object.keys(this.queue).includes(uuid)) {
 			switch (this.queue[uuid].status) {
 				case "downloading":
@@ -403,7 +446,7 @@ export class DeemixApp {
 		}
 	}
 
-	cancelAllDownloads() {
+	stopDownloads() {
 		this.queueOrder = [];
 		let currentItem: string | null = null;
 		Object.values(this.queue).forEach((downloadObject: any) => {
@@ -425,7 +468,17 @@ export class DeemixApp {
 		this.listener.send("removedAllDownloads", currentItem);
 	}
 
-	clearCompletedDownloads() {
+	/**
+	 * Cleans up completed downloads from the queue.
+	 *
+	 * This method iterates over the download queue and removes any download objects
+	 * that have a status of "completed". It deletes the corresponding JSON file from
+	 * the filesystem and removes the download object from the queue. After cleaning up,
+	 * it sends a "removedFinishedDownloads" message to the listener.
+	 *
+	 * @returns {void}
+	 */
+	cleanupCompletedDownloads() {
 		Object.values(this.queue).forEach((downloadObject: any) => {
 			if (downloadObject.status === "completed") {
 				fs.unlinkSync(configFolder + `queue${sep}${downloadObject.uuid}.json`);
@@ -435,6 +488,19 @@ export class DeemixApp {
 		this.listener.send("removedFinishedDownloads");
 	}
 
+	/**
+	 * Restores the download queue from the disk.
+	 *
+	 * This method checks if the queue directory exists, creates it if it doesn't,
+	 * and then reads all items from the directory. It processes each item based on
+	 * its filename and type, reconstructing the queue from the saved state.
+	 *
+	 * - If the item is `order.json`, it attempts to parse the queue order from it.
+	 * - For other items, it attempts to parse the item and add it to the queue.
+	 * - If an item is invalid or incompatible, it is removed from the queue.
+	 *
+	 * @throws Will throw an error if the queue directory cannot be created or read.
+	 */
 	restoreQueueFromDisk() {
 		if (!fs.existsSync(configFolder + "queue"))
 			fs.mkdirSync(configFolder + "queue");

@@ -5,7 +5,7 @@ import { WebSocketServer } from "ws";
 const eventName = "removeFinishedDownloads";
 
 const cb = (_: any, __: any, ___: WebSocketServer, deemix: DeemixApp) => {
-	deemix.clearCompletedDownloads();
+	deemix.cleanupCompletedDownloads();
 	logger.info("Completed downloads cleared");
 };
 

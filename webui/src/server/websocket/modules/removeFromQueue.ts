@@ -5,7 +5,7 @@ import { DeemixApp } from "@/deemixApp.js";
 const eventName = "removeFromQueue";
 
 const cb = (data: any, __: any, ___: WebSocketServer, deemix: DeemixApp) => {
-	deemix.cancelDownload(data);
+	deemix.stopDownload(data);
 	logger.info(`Cancelled ${data}`);
 };
 
